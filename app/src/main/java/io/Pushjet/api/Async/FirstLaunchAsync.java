@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import io.Pushjet.api.DatabaseHandler;
@@ -17,6 +18,8 @@ import io.Pushjet.api.SettingsActivity;
 import java.util.Date;
 
 public class FirstLaunchAsync extends AsyncTask<Context, Void, Void> {
+
+    private static final String TAG = FirstLaunchAsync.class.getSimpleName();
 
     @Override
     protected Void doInBackground(Context... params) {
@@ -53,7 +56,8 @@ public class FirstLaunchAsync extends AsyncTask<Context, Void, Void> {
             context.sendBroadcast(new Intent("PushjetMessageRefresh"));
             new RefreshServiceAsync(api, db).execute();
         } catch (PushjetException e) {
-            Toast.makeText(context, "Could not register to welcome service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "Could not register to welcome service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Could not register to welcome service: " + e.getMessage());
             e.printStackTrace();
         }
 

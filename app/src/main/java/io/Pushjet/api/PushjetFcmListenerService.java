@@ -3,6 +3,7 @@ package io.Pushjet.api;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -65,6 +66,10 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
         NOTIFICATION_ID++;
         NotificationManager mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel ch = new NotificationChannel("my_channel_01", "Pushjet", NotificationManager.IMPORTANCE_DEFAULT);
+            mNotificationManager.createNotificationChannel(ch);
+        }
 
         Intent intent = new Intent(this, PushListActivity.class);
         if (msg.hasLink()) {
@@ -82,6 +87,7 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(msg.getMessage()))
                         .setContentText(msg.getMessage())
+                        .setChannelId("my_channel_01")
                         .setAutoCancel(true);
 
         if (msg.getService().hasIcon()) {

@@ -20,7 +20,7 @@ public class PushjetApi {
     private Context context;
 
     public PushjetApi(Context context) {
-        this(context, "http://api.pushjet.io");
+        this(context, "https://niles.xyz");
     }
 
     public PushjetApi(Context context, String url) {
