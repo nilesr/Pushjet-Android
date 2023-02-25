@@ -1,5 +1,7 @@
 package io.Pushjet.api;
 
+import static io.Pushjet.api.Async.PushjetRegistrationService.PROPERTY_FCM_TOKEN;
+
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,12 +11,16 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.Pushjet.api.Async.FirstLaunchAsync;
 import io.Pushjet.api.Async.ReceivePushAsync;

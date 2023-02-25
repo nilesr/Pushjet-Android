@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import io.Pushjet.api.HttpUtil;
 import io.Pushjet.api.PushjetApi.DeviceUuidFactory;
-import io.Pushjet.api.PushjetFirebaseInstanceIDService;
 import io.Pushjet.api.SettingsActivity;
 
 import java.io.IOException;
@@ -103,7 +102,7 @@ public class PushjetRegistrationService extends Service {
     }
 
     private SharedPreferences getGcmPreferences(Context context) {
-        return context.getSharedPreferences(PushjetFirebaseInstanceIDService.class.getSimpleName(), Context.MODE_PRIVATE);
+        return context.getSharedPreferences("PushjetFirebaseInstanceIDService", Context.MODE_PRIVATE);
     }
 
     public boolean shouldRegister() {

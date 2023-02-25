@@ -1,6 +1,8 @@
 package io.Pushjet.api;
 
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -12,12 +14,16 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import io.Pushjet.api.Async.PushjetRegistrationService;
 import io.Pushjet.api.PushjetApi.PushjetMessage;
 import io.Pushjet.api.PushjetApi.PushjetService;
 
@@ -78,7 +84,7 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
             } catch (Exception ignore) {
             }
         }
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE);
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
@@ -110,6 +116,19 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
     }
+
+    @Override
+    public void onNewToken(@NonNull String refreshedToken) {
+        // Get updated InstanceID token.
+        Log.d(TAG, "FCM Token refreshed.");
+        Log.d(TAG, refreshedToken);
+
+        // call PushjetRegistrationService to update the token
+        Intent intent = new Intent(this, PushjetRegistrationService.class);
+        intent.putExtra(PushjetRegistrationService.PROPERTY_FCM_TOKEN, refreshedToken);
+        startService(intent);
+    }
+
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setPriority(NotificationCompat.Builder mBuilder, PushjetMessage msg) {
