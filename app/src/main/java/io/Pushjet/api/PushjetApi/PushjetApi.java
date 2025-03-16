@@ -1,6 +1,7 @@
 package io.Pushjet.api.PushjetApi;
 
 import android.content.Context;
+import android.util.Log;
 
 import io.Pushjet.api.HttpUtil;
 
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PushjetApi {
+    private static String TAG = PushjetApi.class.getName();
     private String baseurl;
     private int lastCheck = 0;
     private String uuid;
@@ -50,7 +52,8 @@ public class PushjetApi {
             PushjetService srv = new PushjetService(obj.getString("public"), obj.getString("name"), new Date((long) obj.getInt("created") * 1000));
             srv.setIcon(obj.getString("icon"));
             return srv;
-        } catch (JSONException ignore) {
+        } catch (JSONException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("Unknown error", -1);
         }
     }
@@ -72,8 +75,10 @@ public class PushjetApi {
                 srv[i] = new PushjetService(o.getString("public"), o.getString("name"), new Date((long) o.getInt("created") * 1000));
                 srv[i].setIcon(o.getString("icon"));
             }
+            Log.i(TAG, "Found " + srv.length + " subscriptions");
             return srv;
-        } catch (JSONException ignore) {
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
             throw new PushjetException("Unknown error", -1);
         }
     }
@@ -132,9 +137,11 @@ public class PushjetApi {
                 throw new PushjetException(err.getString("message"), err.getInt("id"));
             }
             return json;
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("There was a network issue", 100);
-        } catch (JSONException ignore) {
+        } catch (JSONException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("Unable to parse data: " + resp, 101);
         }
     }
@@ -150,9 +157,11 @@ public class PushjetApi {
                 throw new PushjetException(err.getString("message"), err.getInt("id"));
             }
             return json;
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("There was a network issue", 100);
-        } catch (JSONException ignore) {
+        } catch (JSONException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("Unable to parse data: " + resp, 101);
         }
     }
@@ -168,9 +177,11 @@ public class PushjetApi {
                 throw new PushjetException(err.getString("message"), err.getInt("id"));
             }
             return json;
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("There was a network issue", 100);
-        } catch (JSONException ignore) {
+        } catch (JSONException e) {
+            Log.e(TAG, String.valueOf(e));
             throw new PushjetException("Unable to parse data: " + resp, 101);
         }
     }

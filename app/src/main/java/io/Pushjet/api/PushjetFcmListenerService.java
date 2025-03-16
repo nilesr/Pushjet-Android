@@ -19,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -40,31 +39,29 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage message) {
-        String from = message.getFrom();
-        Map data = message.getData();
+        Map<String, String> data = message.getData();
         try {
-            JSONObject AzMsg = new JSONObject((String)data.get("message"));
-            JSONObject AzServ = AzMsg.getJSONObject("service");
+            JSONObject deser_service = new JSONObject(data.get("service"));
             PushjetService srv = new PushjetService(
-                    AzServ.getString("public"),
-                    AzServ.getString("name"),
-                    new Date((long) AzServ.getInt("created") * 1000)
+                    deser_service.getString("public"),
+                    deser_service.getString("name"),
+                    new Date(deser_service.getLong("created") * 1000)
             );
-            srv.setIcon(AzServ.getString("icon"));
+            srv.setIcon(deser_service.getString("icon"));
 
             PushjetMessage msg = new PushjetMessage(
                     srv,
-                    AzMsg.getString("message"),
-                    AzMsg.getString("title"),
-                    AzMsg.getInt("timestamp")
+                    data.get("message"),
+                    data.get("title"),
+                    Long.parseLong(data.get("timestamp"))
             );
-            msg.setLevel(AzMsg.getInt("level"));
-            msg.setLink(AzMsg.getString("link"));
+            msg.setLevel(Integer.parseInt(data.get("level")));
+            msg.setLink(data.get("link"));
             DatabaseHandler db = new DatabaseHandler(this);
             db.addMessage(msg);
             sendNotification(msg);
-        } catch (JSONException ignore) {
-            Log.e("PushjetJson", ignore.getMessage());
+        } catch (JSONException e) {
+            Log.e("PushjetJson", e.toString(), e);
         }
     }
 
@@ -72,16 +69,15 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
         NOTIFICATION_ID++;
         NotificationManager mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel ch = new NotificationChannel("my_channel_01", "Pushjet", NotificationManager.IMPORTANCE_DEFAULT);
-            mNotificationManager.createNotificationChannel(ch);
-        }
+        NotificationChannel ch = new NotificationChannel("my_channel_01", "Pushjet", NotificationManager.IMPORTANCE_DEFAULT);
+        mNotificationManager.createNotificationChannel(ch);
 
         Intent intent = new Intent(this, PushListActivity.class);
         if (msg.hasLink()) {
             try {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse(msg.getLink()));
-            } catch (Exception ignore) {
+            } catch (Exception e) {
+                Log.e(TAG, e.toString(), e);
             }
         }
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE);
@@ -105,8 +101,8 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
                 int nWidth = (int) res.getDimension(android.R.dimen.notification_large_icon_width);
 
                 mBuilder.setLargeIcon(MiscUtil.scaleBitmap(icon, nWidth, nHeight));
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
+            } catch (IOException e) {
+                Log.e(TAG, e.toString());
             }
         }
 
@@ -130,7 +126,6 @@ public class PushjetFcmListenerService extends FirebaseMessagingService {
     }
 
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void setPriority(NotificationCompat.Builder mBuilder, PushjetMessage msg) {
         int priority = msg.getLevel() - 3;
         if(Math.abs(priority) > 2) {

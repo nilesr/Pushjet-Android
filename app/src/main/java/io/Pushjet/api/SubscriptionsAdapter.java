@@ -19,9 +19,10 @@ import java.util.Collections;
 public class SubscriptionsAdapter extends BaseAdapter {
     private Context context;
     private LayoutInflater layoutInflater;
-    private ArrayList<PushjetService> entries = new ArrayList<PushjetService>();
+    private ArrayList<PushjetService> entries = new ArrayList<>();
 
     public SubscriptionsAdapter(Context context) {
+        super();
         this.context = context;
         this.layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -52,9 +53,9 @@ public class SubscriptionsAdapter extends BaseAdapter {
             itemView = (RelativeLayout) convertView;
         }
 
-        TextView titleText = (TextView) itemView.findViewById(R.id.service_name);
-        TextView tokenText = (TextView) itemView.findViewById(R.id.service_token);
-        ImageView iconImage = (ImageView) itemView.findViewById(R.id.service_icon_image);
+        TextView titleText = itemView.findViewById(R.id.service_name);
+        TextView tokenText = itemView.findViewById(R.id.service_token);
+        ImageView iconImage = itemView.findViewById(R.id.service_icon_image);
 
         String title = entries.get(position).getName();
         String token = entries.get(position).getToken();

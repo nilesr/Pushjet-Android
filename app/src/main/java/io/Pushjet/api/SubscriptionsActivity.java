@@ -5,11 +5,14 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.text.InputType;
 import android.util.Log;
@@ -17,6 +20,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,6 +46,7 @@ import io.Pushjet.api.PushjetApi.PushjetUri;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class SubscriptionsActivity extends ListActivity {
     private PushjetApi api;
@@ -49,18 +54,13 @@ public class SubscriptionsActivity extends ListActivity {
     private SubscriptionsAdapter adapter;
     private BroadcastReceiver receiver;
     private SwipeRefreshLayout refreshLayout;
-    private SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
-        @Override
-        public void onRefresh() {
-            refreshServices();
-        }
-    };
+    private SwipeRefreshLayout.OnRefreshListener refreshListener = this::refreshServices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subscriptions);
-        this.refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        this.refreshLayout = findViewById(R.id.swipe_container);
         this.refreshLayout.setEnabled(true);
         this.refreshLayout.setOnRefreshListener(refreshListener);
 
@@ -70,7 +70,7 @@ public class SubscriptionsActivity extends ListActivity {
         adapter = new SubscriptionsAdapter(this);
         setListAdapter(adapter);
 
-        adapter.upDateEntries(new ArrayList<PushjetService>(Arrays.asList(db.getAllServices())));
+        adapter.upDateEntries(new ArrayList<>(Arrays.asList(db.getAllServices())));
         registerForContextMenu(findViewById(android.R.id.list));
 
         Uri pushjetUri = getIntent().getData();
@@ -92,7 +92,7 @@ public class SubscriptionsActivity extends ListActivity {
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                adapter.upDateEntries(new ArrayList<PushjetService>(Arrays.asList(db.getAllServices())));
+                adapter.upDateEntries(new ArrayList<>(Arrays.asList(db.getAllServices())));
             }
         };
     }
@@ -100,7 +100,7 @@ public class SubscriptionsActivity extends ListActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        registerReceiver(receiver, new IntentFilter("PushjetIconDownloaded"));
+        registerReceiver(receiver, new IntentFilter("PushjetIconDownloaded"), RECEIVER_NOT_EXPORTED);
     }
 
     @Override
@@ -188,41 +188,30 @@ public class SubscriptionsActivity extends ListActivity {
                 };
                 final Activity thisActivity = this;
                 new AlertDialog.Builder(this)
-                        .setItems(items, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                if (i == 0) {
-                                    new IntentIntegrator(thisActivity).initiateScan(IntentIntegrator.QR_CODE_TYPES);
-                                } if (i == 1) {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
-                                    builder.setTitle("Public token");
-                                    final EditText input = new EditText(thisActivity);
+                        .setItems(items, (dialogInterface, i) -> {
+                            if (i == 0) {
+                                new IntentIntegrator(thisActivity).initiateScan(Collections.singleton(IntentIntegrator.QR_CODE));
+                            } if (i == 1) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+                                builder.setTitle("Public token");
+                                final EditText input = new EditText(thisActivity);
 
-                                    input.setInputType(InputType.TYPE_CLASS_TEXT);
-                                    builder.setView(input);
-                                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            try {
-                                                parseTokenOrUri(input.getText().toString());
-                                            } catch (PushjetException e) {
-                                                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                                            } catch (NullPointerException ignore) {
-                                            }
+                                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                                builder.setView(input);
+                                builder.setPositiveButton("OK", (dialog, which) -> {
+                                    try {
+                                        parseTokenOrUri(input.getText().toString());
+                                    } catch (PushjetException e) {
+                                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    } catch (NullPointerException ignore) {
+                                    }
 
-                                        }
-                                    });
-                                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.cancel();
-                                        }
-                                    });
+                                });
+                                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
-                                    builder.show();
-                                }
-
+                                builder.show();
                             }
+
                         })
                         .show();
                 return true;
@@ -259,12 +248,9 @@ public class SubscriptionsActivity extends ListActivity {
     }
 
     private void refreshServices() {
-        RefreshServiceCallback callback = new RefreshServiceCallback() {
-            @Override
-            public void onComplete(PushjetService[] services) {
-                adapter.upDateEntries(new ArrayList<PushjetService>(Arrays.asList(services)));
-                refreshLayout.setRefreshing(false);
-            }
+        RefreshServiceCallback callback = services -> {
+            adapter.upDateEntries(new ArrayList<>(Arrays.asList(services)));
+            refreshLayout.setRefreshing(false);
         };
         RefreshServiceAsync refresh = new RefreshServiceAsync(api, db);
         refresh.setCallback(callback);

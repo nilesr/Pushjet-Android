@@ -16,8 +16,8 @@ public class PushjetMessage {
         this(service, message, title, 0);
     }
 
-    public PushjetMessage(PushjetService service, String message, String title, int timestamp) {
-        this(service, message, title, new Date((long) timestamp * 1000));
+    public PushjetMessage(PushjetService service, String message, String title, long timestamp) {
+        this(service, message, title, new Date(timestamp * 1000));
     }
 
     public PushjetMessage(PushjetService service, String message, String title, Date timestamp) {

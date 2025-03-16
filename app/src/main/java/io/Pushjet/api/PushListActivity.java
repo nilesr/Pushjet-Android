@@ -109,8 +109,8 @@ public class PushListActivity extends ListActivity {
     protected void onStart() {
         super.onStart();
 
-        registerReceiver(receiver, new IntentFilter("PushjetMessageRefresh"));
-        registerReceiver(receiver, new IntentFilter("PushjetIconDownloaded"));
+        registerReceiver(receiver, new IntentFilter("PushjetMessageRefresh"), RECEIVER_NOT_EXPORTED);
+        registerReceiver(receiver, new IntentFilter("PushjetIconDownloaded"), RECEIVER_NOT_EXPORTED);
     }
 
     @Override

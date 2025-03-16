@@ -1,6 +1,7 @@
 package io.Pushjet.api.Async;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import io.Pushjet.api.DatabaseHandler;
 import io.Pushjet.api.PushListAdapter;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 
 
 public class ReceivePushAsync extends AsyncTask<Void, Void, ArrayList<PushjetMessage>> {
+    private static String TAG = ReceivePushAsync.class.getName();
     private PushjetApi api;
     private PushListAdapter adapter;
     private PushjetException error;
@@ -30,10 +32,11 @@ public class ReceivePushAsync extends AsyncTask<Void, Void, ArrayList<PushjetMes
     @Override
     protected ArrayList<PushjetMessage> doInBackground(Void... voids) {
         try {
-            return new ArrayList<PushjetMessage>(Arrays.asList(this.api.getNewMessage()));
+            return new ArrayList<>(Arrays.asList(this.api.getNewMessage()));
         } catch (PushjetException e) {
             this.error = e;
-            return new ArrayList<PushjetMessage>();
+            Log.e(TAG, e.toString());
+            return new ArrayList<>();
         }
     }
 
